@@ -28,11 +28,9 @@
         state: present
 
     - name: Set remote listener
-      become_user: postgres
-      community.postgresql.postgresql_set:
-        name: listen_addresses 
-        value: '*'
-      register: set
+      lineinfile:
+        path: /etc/postgresql/9.6/main/postgresql.conf
+        line: listen_addresses = '*'
 
     - name: Reload Postgresql service 
       service:
