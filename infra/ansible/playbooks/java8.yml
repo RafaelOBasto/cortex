@@ -1,0 +1,22 @@
+---
+- name: Install Java
+  hosts: all
+  remote_user: ubuntu
+  become: yes
+  tasks:
+    - name: Install OpenJDK 8
+      apt:
+        pkg:
+          - openjdk-8-jdk
+          - openjdk-8-jre
+
+    - name: Set java JRE home
+      lineinfile:
+        path: /etc/environment
+        line: JRE_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre
+
+    - name: Set java JDK home
+      lineinfile:
+        path: /etc/environment
+        line: JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+

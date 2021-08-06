@@ -1,0 +1,29 @@
+---
+- name: Install Open JDK 8
+  hosts: all
+  remote_user: ubuntu
+  become: yes
+  tasks:
+    - name: Set timezone to America/Sao_Paulo
+      timezone:
+        name: America/Sao_Paulo
+    - name: Create a xfs filesystem on /dev/xvdh
+      community.general.filesystem:
+        fstype: xfs
+        dev: /dev/xvdh
+    - name: Mount /opt on startup
+      mount:
+        path: /opt
+        src: /dev/xvdh
+        opts: defaults
+        state: mounted
+        fstype: xfs
+    - name: Fix apt repo url
+      shell:
+        cmd: sed -i 's/us-east-1\.ec2\.//g' /etc/apt/sources.list
+    - name: Install zip e htop
+      apt:
+        update_cache: yes
+        pkg:
+          - zip
+          - htop

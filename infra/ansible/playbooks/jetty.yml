@@ -1,0 +1,96 @@
+- name: Install Jetty
+  hosts: all
+  remote_user: ubuntu
+  become: yes
+  tasks:
+    - name: Add jetty user
+      user:
+        name:  jetty
+        comment:  Usuario de servico do jetty
+        state: present
+        create_home: False
+        system: True
+
+    - name: Copy Jetty zip 
+      copy:
+        src:  ../../jetty/jetty-distribution-9.4.26.v20200117.zip
+        dest: /opt/jetty.zip
+
+    - name: Extract files
+      unarchive:
+        src: /opt/jetty.zip
+        extra_opts: 
+        dest: /opt/.
+        owner: jetty
+        group: jetty
+        remote_src: yes
+
+    - name: Delete old jetty home
+      file:
+        path: /opt/jetty
+        state: absent 
+
+    - name: Rename jetty home dir
+      command: mv -f /opt/jetty-distribution-9.4.26.v20200117 /opt/jetty
+
+    - name: Delete zip
+      file:
+        path: /opt/jetty.zip
+        state: absent 
+
+    - name: Create jetty temp dir
+      file:
+        path: /opt/jetty/temp
+        owner: jetty
+        group: jetty
+        state: directory
+
+    - name: Set Jetty listener address
+      lineinfile:
+        path: /opt/jetty/start.ini
+        line: jetty.http.host=0.0.0.0
+
+    - name: Set Jetty listener port
+      lineinfile:
+        path: /opt/jetty/start.ini
+        line: jetty.http.port=8081
+
+    - name: Set jetty home env
+      lineinfile:
+        path: /etc/environment
+        line: JETTY_HOME=/opt/jetty
+
+    - name: Set jetty user env
+      lineinfile:
+        path: /etc/environment
+        line: JETTY_USER=jetty
+
+    - name: Set jetty logs env
+      lineinfile:
+        path: /etc/environment
+        line: JETTY_LOGS=/opt/jetty/logs
+
+    - name: Copy Jetty script service file
+      copy:
+        src:  /opt/jetty/bin/jetty.sh
+        dest: /etc/init.d/jetty
+        mode: 0755
+        remote_src: True
+
+    - name: Copy Jetty service
+      copy:
+        src:  ../../jetty/jetty.service
+        dest: /etc/systemd/system/jetty.service
+
+    - name: Deploy app
+      copy:
+        src:  ../../../src/build/case-devops.war
+        dest: /opt/jetty/webapps/.
+        owner: jetty
+        group: jetty
+
+    - name: Start Jetty service
+      systemd:
+        name: jetty
+        state: started
+        enabled: yes    

@@ -1,0 +1,4 @@
+all:
+  hosts:
+    case_server:
+      ansible_host: 34.239.151.51

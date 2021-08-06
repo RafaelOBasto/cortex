@@ -1,0 +1,64 @@
+---
+- name: Install PostgreSQL 9.6
+  hosts: all
+  remote_user: ubuntu
+  become: yes
+  tasks:
+    - name: Set PostgreSQL apt repo
+      lineinfile:
+        create: True
+        path: /etc/apt/sources.list.d/pgdg.list
+        line: deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main
+
+    - name: Set PostgreSQL apt key
+      shell:
+        cmd: wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | apt-key add -
+
+    - name: Install PostgreSQL 9.6
+      apt:
+        update_cache: yes
+        pkg:
+          - postgresql-9.6 
+          - postgresql-contrib-9.6
+          - libpq-dev 
+
+    - name: Make sure psycopg2 is installed (Pre req ansible postgresql)
+      pip:
+        name: psycopg2
+        state: present
+
+    - name: Set remote listener
+      become_user: postgres
+      community.postgresql.postgresql_set:
+        name: listen_addresses 
+        value: '*'
+      register: set
+
+    - name: Reload Postgresql service 
+      service:
+        name: postgresql
+        state: reloaded
+
+    - name: Create database cortex
+      become_user: postgres
+      community.postgresql.postgresql_db:
+        name: cortex
+
+    - name: Add remote access to db
+      community.postgresql.postgresql_pg_hba:
+        dest: /etc/postgresql/9.6/main/pg_hba.conf
+        contype: host
+        address: all
+        method: md5
+        databases: cortex
+        state: present
+
+    - name: Connect to cortex database and create cortex user
+      become_user: postgres
+      community.postgresql.postgresql_user:
+        db: cortex
+        name: cortex
+        password: cortex@2018 
+        priv: "ALL"
+        state: present
+

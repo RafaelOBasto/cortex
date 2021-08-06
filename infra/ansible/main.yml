@@ -1,0 +1,7 @@
+---
+- import_playbook: ./playbooks/so_tools.yml
+- import_playbook: ./playbooks/python3.yml
+- import_playbook: ./playbooks/java8.yml
+- import_playbook: ./playbooks/postgresql96.yml
+- import_playbook: ./playbooks/jetty.yml
+- import_playbook: ./playbooks/backup_db.yml

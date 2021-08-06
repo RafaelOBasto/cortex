@@ -1,0 +1,26 @@
+---
+- name: Install database backup
+  hosts: all
+  remote_user: ubuntu
+  become: yes
+  tasks:
+    - name: Create script dir
+      file:
+        path: /opt/scripts
+        state: directory
+
+    - name: Copy backup script
+      copy:
+        src:  ../../backup/backup.sh
+        dest: /opt/scripts/backup.sh
+        mode: 0770
+
+    - name: Creates a cron file under /etc/cron.d
+      ansible.builtin.cron:
+        name: backup_db
+        minute: "0"
+        hour: "1"
+        user: root
+        job: "/opt/scripts/backup.sh"
+        cron_file: backup_db
+
