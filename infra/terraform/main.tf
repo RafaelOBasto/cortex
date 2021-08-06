@@ -64,7 +64,7 @@ resource "aws_instance" "server" {
   ami                    = data.aws_ami.ubuntu.image_id
   instance_type          = "t2.micro"
   vpc_security_group_ids = [ aws_security_group.CASE-SG.id ]
-  key_name = aws_key_pair.user.key_name
+  key_name               = aws_key_pair.user.key_name
 
   root_block_device {
     volume_size = 10
